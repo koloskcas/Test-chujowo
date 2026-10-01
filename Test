@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Cloudinary</title>
+</head>
+<body>
+
+<h2>Test uploadu zdjęcia</h2>
+
+<input type="file" id="file" accept="image/*">
+<button id="upload">Wyślij zdjęcie</button>
+
+<p id="status"></p>
+<img id="preview" style="max-width:400px;">
+
+<script>
+const CLOUD_NAME = 'jmzkyzst';
+const UPLOAD_PRESET = 'test-chuj';
+
+document.getElementById('upload').addEventListener('click', async () => {
+    const file = document.getElementById('file').files[0];
+    const status = document.getElementById('status');
+
+    if (!file) {
+        status.textContent = 'Wybierz zdjęcie.';
+        return;
+    }
+
+    status.textContent = 'Wysyłanie...';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    try {
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+            {
+                method: 'POST',
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+        if (data.secure_url) {
+            status.textContent = 'UPLOAD DZIAŁA ✅';
+            document.getElementById('preview').src = data.secure_url;
+            console.log(data);
+        } else {
+            status.textContent =
+                'BŁĄD: ' + (data.error?.message || 'Nieznany błąd');
+            console.error(data);
+        }
+
+    } catch (error) {
+        status.textContent = 'Błąd połączenia.';
+        console.error(error);
+    }
+});
+</script>
+
+</body>
+</html>
